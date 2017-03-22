@@ -28,7 +28,7 @@ def getPrePro(Vt, Tt):
     """
     def swapper(X):
         #生成词频矩阵
-        counts = vt.transform(X)
+        counts = Vt.transform(X)
         #生成tf-idf矩阵
         return Tt.transform(counts)
     return swapper
@@ -44,11 +44,14 @@ def testClassifier():
     for i in dataset.data:
         datasets.append(' '.join([j for j in jieba.cut(i)]))
     #生成训练数据集合测试集
-    train_X, train_y, test_X, test_y = train_test_split(datasets,
+    train_X, test_X, train_y, test_y = train_test_split(array(datasets),
                                                         dataset.target,
                                                         test_size=0.3)
-    #生成
-    #生成Tf-idf矩阵
+    #训练数据
+    classifier = bayesClassifier(MultinomialNB)
+    classifier.trainPreprocessing(train_X, train_y)
+    #预测数据
+    print 'the precious is ', classifier.score(test_X, test_y)
     
     
     
@@ -119,7 +122,7 @@ class bayesClassifier(object):
         vectorizer = CountVectorizer(min_df=1)
         transformer = TfidfTransformer(smooth_idf=False)
         counts = vectorizer.fit_transform(X)
-        tfidfs = transformer.fit(counts, y)
+        tfidfs = transformer.fit_transform(counts, y)
         #生成预处理机
         self.preprocessor = getPrePro(vectorizer, transformer)
         #训练分类器
@@ -129,6 +132,12 @@ class bayesClassifier(object):
     def getClassifier(self):
         """"""
         return self.classifier
+    
+    #----------------------------------------------------------------------
+    def score(self, X, y):
+        """"""
+        newX = self.preprocessor(X)
+        return self.classifier.score(newX, y)
     
 
 
