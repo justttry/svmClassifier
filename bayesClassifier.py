@@ -20,7 +20,7 @@ def loadfiles(dirs):
     return load_files(dirs)
 
 #----------------------------------------------------------------------
-def preprocessinger(Vt, Tt):
+def getPrePro(Vt, Tt):
     """
     生成预处理器
     Parameter:
@@ -32,32 +32,6 @@ def preprocessinger(Vt, Tt):
         #生成tf-idf矩阵
         return Tt.transform(counts)
     return swapper
-
-#----------------------------------------------------------------------
-def vt(X, y):
-    """
-    词频矩阵生成器
-    Parameter:
-    X:训练数据集
-    y:类别向量
-    Return:
-    vt:词频生成器
-    """
-    vectorizer = CountVectorizer(min_df=1)
-    return vectorizer.fit(X, y)
-
-#----------------------------------------------------------------------
-def tt(X, y):
-    """
-    tf-idf矩阵生成器
-    Parameter:
-    X:训练数据集
-    y:类别向量
-    Return:
-    tt:tf-idf生成器
-    """
-    transformer = TfidfTransformer(smooth_idf=False) 
-    return transformer.fit(X, y)
 
 
 #----------------------------------------------------------------------
@@ -73,6 +47,7 @@ def testClassifier():
     train_X, train_y, test_X, test_y = train_test_split(datasets,
                                                         dataset.target,
                                                         test_size=0.3)
+    #生成
     #生成Tf-idf矩阵
     
     
@@ -127,10 +102,33 @@ class bayesClassifier(object):
         y:预测类
         """
         if not self.preprocessing:
-            dataset = self.
-        
-        
+            return None
+        dataset = self.preprocessor(X)
+        return self.classifier.transform(X)
     
+    #----------------------------------------------------------------------
+    def trainPreprocessing(self, X, y):
+        """
+        训练预处理机
+        X:训练矩阵
+        y:训练矩阵类别
+        Return:
+        None
+        """
+        #训练
+        vectorizer = CountVectorizer(min_df=1)
+        transformer = TfidfTransformer(smooth_idf=False)
+        counts = vectorizer.fit_transform(X)
+        tfidfs = transformer.fit(counts, y)
+        #生成预处理机
+        self.preprocessor = getPrePro(vectorizer, transformer)
+        #训练分类器
+        self.classifier.fit(tfidfs, y)
+        
+    #----------------------------------------------------------------------
+    def getClassifier(self):
+        """"""
+        return self.classifier
     
 
 
