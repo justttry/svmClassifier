@@ -4,6 +4,8 @@ from sklearn.datasets import load_files
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.model_selection import train_test_split
 import jieba
 from numpy import *
 import unittest
@@ -16,6 +18,65 @@ def loadfiles(dirs):
     Return:
     """
     return load_files(dirs)
+
+#----------------------------------------------------------------------
+def preprocessinger(Vt, Tt):
+    """
+    生成预处理器
+    Parameter:
+    Vt:
+    """
+    def swapper(X):
+        #生成词频矩阵
+        counts = vt.transform(X)
+        #生成tf-idf矩阵
+        return Tt.transform(counts)
+    return swapper
+
+#----------------------------------------------------------------------
+def vt(X, y):
+    """
+    词频矩阵生成器
+    Parameter:
+    X:训练数据集
+    y:类别向量
+    Return:
+    vt:词频生成器
+    """
+    vectorizer = CountVectorizer(min_df=1)
+    return vectorizer.fit(X, y)
+
+#----------------------------------------------------------------------
+def tt(X, y):
+    """
+    tf-idf矩阵生成器
+    Parameter:
+    X:训练数据集
+    y:类别向量
+    Return:
+    tt:tf-idf生成器
+    """
+    transformer = TfidfTransformer(smooth_idf=False) 
+    return transformer.fit(X, y)
+
+
+#----------------------------------------------------------------------
+def testClassifier():
+    """"""
+    #加载数据
+    dataset = load_files('./test_file2')
+    #对数据进行分词处理
+    datasets = []
+    for i in dataset.data:
+        datasets.append(' '.join([j for j in jieba.cut(i)]))
+    #生成训练数据集合测试集
+    train_X, train_y, test_X, test_y = train_test_split(datasets,
+                                                        dataset.target,
+                                                        test_size=0.3)
+    #生成Tf-idf矩阵
+    
+    
+    
 
 #----------------------------------------------------------------------
 def compareTextAB(A, B):
@@ -45,6 +106,35 @@ def compareTextAB(A, B):
 
 
 ########################################################################
+class bayesClassifier(object):
+    """"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, classifier):
+        """Constructor"""
+        #基本分类器
+        self.classifier = classifier()
+        #预处理机
+        self.preprocessor = None
+        
+    #----------------------------------------------------------------------
+    def predict(self, X):
+        """
+        预测类别
+        Parameter:
+        X:被预测矩阵
+        Parameter:
+        y:预测类
+        """
+        if not self.preprocessing:
+            dataset = self.
+        
+        
+    
+    
+
+
+########################################################################
 class SvmClassifierTest(unittest.TestCase):
     """"""
 
@@ -53,6 +143,7 @@ class SvmClassifierTest(unittest.TestCase):
         dirs = './test_file2'
         datasets = loadfiles(dirs)
         print 'test_loadfiles done!'
+        print '-' * 70
         
     #----------------------------------------------------------------------
     def test_bayesClassifier_GaussianNB(self):
@@ -65,6 +156,7 @@ class SvmClassifierTest(unittest.TestCase):
         print("Number of mislabeled points out of a total %d points : %d"
               % (iris.data.shape[0],(iris.target != y_pred).sum()))   
         print 'test_bayesClassifier Done'
+        print '-' * 70
         
     #----------------------------------------------------------------------
     def test_chi2(self):
@@ -84,6 +176,7 @@ class SvmClassifierTest(unittest.TestCase):
         train_x_new = selects.fit_transform(train_x, train_y)
         test_x_new = selects.transform(test_x)
         print 'test_chi2 done!'
+        print '-' * 70
         
     #----------------------------------------------------------------------
     def test_tfidf(self):
@@ -102,6 +195,7 @@ class SvmClassifierTest(unittest.TestCase):
         train_tfidf = transformer.fit_transform(train_counts)
         test_tfidf = transformer.transform(test_counts)
         print 'test_tfidf done!'
+        print '-' * 70
         
     #----------------------------------------------------------------------
     def test_CountVectorizer(self):
@@ -110,13 +204,14 @@ class SvmClassifierTest(unittest.TestCase):
         vectorizer = CountVectorizer(min_df=1)
         corpus = ["我 来到 北京 清华大学",  
                   "他 来到 了 网易 杭研 大厦",  
-                  "小明 硕士 毕业 与 中国 科学院 小明",  
+                  "小明 硕士 毕业 与 中国 科学院 小明 ab",  
                   "我 爱 北京 天安门"] 
         X = vectorizer.fit_transform(corpus)        
         for i in vectorizer.get_feature_names():
             print i
         print X.toarray()
         print 'test_CountVectorizer done!'
+        print '-' * 70
         
     #----------------------------------------------------------------------
     def test_jieba(self):
@@ -129,6 +224,7 @@ class SvmClassifierTest(unittest.TestCase):
         for i in corpus:
             print ' '.join(jieba.cut(i))
         print 'test_jieba done!'
+        print '-' * 70
         
     #----------------------------------------------------------------------
     def test_compareTextAB(self):
@@ -143,6 +239,12 @@ class SvmClassifierTest(unittest.TestCase):
         B = "我爱北京天安门"
         print compareTextAB(A, B)
         print 'test_compareTextAB done'
+        print '-' * 70
+        
+    #----------------------------------------------------------------------
+    def test_testClassifier(self):
+        """"""
+        testClassifier()
         
         
 #----------------------------------------------------------------------
@@ -156,6 +258,7 @@ def suite():
     suite.addTest(SvmClassifierTest('test_CountVectorizer'))
     suite.addTest(SvmClassifierTest('test_jieba'))
     suite.addTest(SvmClassifierTest('test_compareTextAB'))
+    suite.addTest(SvmClassifierTest('test_testClassifier'))
     return suite
 
 if __name__ == '__main__':
