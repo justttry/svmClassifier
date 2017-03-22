@@ -55,7 +55,7 @@ class SvmClassifierTest(unittest.TestCase):
         print 'test_loadfiles done!'
         
     #----------------------------------------------------------------------
-    def test_bayesClassifier(self):
+    def test_bayesClassifier_GaussianNB(self):
         """"""
         from sklearn import datasets
         iris = datasets.load_iris()
@@ -150,7 +150,7 @@ def suite():
     """"""
     suite = unittest.TestSuite()
     suite.addTest(SvmClassifierTest('test_loadfiles'))
-    suite.addTest(SvmClassifierTest('test_bayesClassifier'))
+    suite.addTest(SvmClassifierTest('test_bayesClassifier_GaussianNB'))
     suite.addTest(SvmClassifierTest('test_chi2'))
     suite.addTest(SvmClassifierTest('test_tfidf'))
     suite.addTest(SvmClassifierTest('test_CountVectorizer'))
