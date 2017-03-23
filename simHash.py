@@ -30,7 +30,7 @@ class simhash:
     
     #求海明距离
     def hamming_distance(self, other):
-        x = (self.hash ^ other.hash) & ((1 << self.hashbits) - 1)
+        x = (self.hash ^ other) & ((1 << self.hashbits) - 1)
         tot = 0;
         while x :
             tot += 1
@@ -40,7 +40,7 @@ class simhash:
     #求相似度
     def similarity (self, other):
         a = float(self.hash)
-        b = float(other.hash)
+        b = float(other)
         if a > b : return b / a
         else: return a / b
     
@@ -70,5 +70,5 @@ if __name__ == '__main__':
     s = 'nai nai ge xiong cao'
     hash3 = simhash(s.split())
     
-    print(hash1.hamming_distance(hash2) , "   " , hash1.similarity(hash2))
-    print(hash1.hamming_distance(hash3) , "   " , hash1.similarity(hash3))
+    print(hash1.hamming_distance(hash2.hash) , "   " , hash1.similarity(hash2.hash))
+    print(hash1.hamming_distance(hash3.hash) , "   " , hash1.similarity(hash3.hash))
