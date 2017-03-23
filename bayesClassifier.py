@@ -14,6 +14,7 @@ from sklearn.feature_selection import chi2
 import jieba
 from numpy import *
 import unittest
+import matplotlib.pyplot as plt
 
 #----------------------------------------------------------------------
 def loadfiles(dirs):
@@ -268,6 +269,7 @@ class SvmClassifierTest(unittest.TestCase):
         cv = ShuffleSplit(n_splits=3, test_size=0.3)
         for train_x, test_x in cv.split(X):
             print '%s %s' %(train_x, test_x)
+        print 'test_shufflesplit done!'
         print '-' * 70
             
     #----------------------------------------------------------------------
@@ -287,6 +289,34 @@ class SvmClassifierTest(unittest.TestCase):
         print 'test_countvectors done'
         print '-' * 70
         
+    #----------------------------------------------------------------------
+    def test_figure_k_acurracy(self):
+        """"""
+        #加载数据
+        dataset = load_files('./test_file2')
+        #对数据进行分词处理
+        datasets = []
+        for i in dataset.data:
+            datasets.append(' '.join([j for j in jieba.cut(i)]))        #训练数据
+        cv = ShuffleSplit(n_splits=3, test_size=0.3, random_state=0)
+        ks = [1, 2, 3, 5, 10, 20, 30, 50, 100, 200, 300, 500, 1000, 2000, 
+              3000, 5000, 10000, 20000, 'all']
+        accuracys = []
+        for k in ks:
+            classifier = bayesClassifier(MultinomialNB, k=k)
+            clf = make_pipeline(classifier)
+            accuracys.append(\
+                average(cross_val_score(clf, datasets, dataset.target, cv=cv)))
+        fig, ax = plt.subplots()
+        ax.scatter(range(len(ks)), accuracys)
+        ks[-1] = 25000
+        ax.set_xticks(ks)
+        ax.set_xlabel('k')
+        ax.set_ylabel('accuracy')
+        fig.show()
+        print 'test_figure_k_acurracy done!'
+        print '-' * 70
+        
         
 #----------------------------------------------------------------------
 def suite():
@@ -303,6 +333,7 @@ def suite():
     suite.addTest(SvmClassifierTest('test_pipline_cross_val_score'))
     suite.addTest(SvmClassifierTest('test_shufflesplit'))
     suite.addTest(SvmClassifierTest('test_countvectors'))
+    suite.addTest(SvmClassifierTest('test_figure_k_acurracy'))
     return suite
 
 if __name__ == '__main__':
