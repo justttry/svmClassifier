@@ -247,6 +247,32 @@ class SvmClassifierTest(unittest.TestCase):
         print 'test_pipline_cross_val_score done!'
         print '-' * 70
         
+    #----------------------------------------------------------------------
+    def test_shufflesplit(self):
+        """"""
+        X = arange(5)
+        cv = ShuffleSplit(n_splits=3, test_size=0.3)
+        for train_x, test_x in cv.split(X):
+            print '%s %s' %(train_x, test_x)
+        print '-' * 70
+            
+    #----------------------------------------------------------------------
+    def test_countvectors(self):
+        """"""
+        vectorizer = CountVectorizer(min_df=1, analyzer='word')
+        train_x = ["我 来到 北京 清华大学",  
+                   "他 来到 了 网易 杭研 大厦",  
+                   "小明 硕士 毕业 与 中国 科学院 小明 ab",  
+                   "我 爱 北京 天安门"] 
+        test_x = [u"中国 人民 晚上 科学院"]
+        vectorizer.fit(train_x)
+        a = vectorizer.transform(test_x)
+        print ' '.join(vectorizer.get_feature_names())
+        print a.toarray()
+        print ' '.join(test_x)
+        print 'test_countvectors done'
+        print '-' * 70
+        
         
 #----------------------------------------------------------------------
 def suite():
@@ -259,8 +285,10 @@ def suite():
     suite.addTest(SvmClassifierTest('test_CountVectorizer'))
     suite.addTest(SvmClassifierTest('test_jieba'))
     suite.addTest(SvmClassifierTest('test_compareTextAB'))
-    #suite.addTest(SvmClassifierTest('test_testClassifier'))
+    suite.addTest(SvmClassifierTest('test_testClassifier'))
     suite.addTest(SvmClassifierTest('test_pipline_cross_val_score'))
+    suite.addTest(SvmClassifierTest('test_shufflesplit'))
+    suite.addTest(SvmClassifierTest('test_countvectors'))
     return suite
 
 if __name__ == '__main__':
