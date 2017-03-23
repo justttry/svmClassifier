@@ -9,6 +9,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import ShuffleSplit
 from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import cross_val_score
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
 import jieba
 from numpy import *
 import unittest
@@ -36,11 +38,12 @@ def testClassifier():
                                                         dataset.target,
                                                         test_size=0.3)
     #训练数据
-    classifier = bayesClassifier(MultinomialNB)
-    classifier.trainFuncs(train_X, train_y)
+    classifier = bayesClassifier(MultinomialNB, k=1000)
+    classifier.fit_transform(train_X, train_y)
     #预测数据
     counts = classifier.vectorizer.transform(test_X)
-    tfidfs = classifier.transformer.transform(counts)
+    newcounts = classifier.featureselect.transform(counts)
+    tfidfs = classifier.transformer.transform(newcounts)
     print 'the precious is ', classifier.classifier.score(tfidfs, test_y)
     
 
@@ -76,7 +79,7 @@ class bayesClassifier(object):
     """"""
 
     #----------------------------------------------------------------------
-    def __init__(self, classifier):
+    def __init__(self, classifier, k='all'):
         """Constructor"""
         #基本分类器
         self.classifier = classifier()
@@ -84,6 +87,9 @@ class bayesClassifier(object):
         self.vectorizer = CountVectorizer(min_df=1)
         #TFIDF生成函数
         self.transformer = TfidfTransformer(smooth_idf=False)
+        #特征选择数
+        self.k = k 
+        self.featureselect = SelectKBest(chi2, k=k)
         
     #----------------------------------------------------------------------
     def predict(self, X):
@@ -94,25 +100,35 @@ class bayesClassifier(object):
         Parameter:
         y:预测类
         """
-        counts = self.vectorizer.transform(X)
-        tfidfs = self.transformer.transform(counts)
-        return self.classifier.transform(tfidfs)
+        tfidfs = self.transform(X)
+        return self.classifier.predict(tfidfs)
     
     #----------------------------------------------------------------------
-    def trainFuncs(self, X, y):
-        """
-        训练预处理机
-        X:训练矩阵
-        y:训练矩阵类别
-        Return:
-        None
-        """
-        #计算词频,训练词频函数
+    def fit_transform(self, X, y):
+        """"""
         counts = self.vectorizer.fit_transform(X)
-        #计算tfidf，训练TFIDF函数
-        tfidfs = self.transformer.fit_transform(counts, y)
-        #训练分类器
+        newcounts = self.featureselect.fit_transform(counts, y)
+        tfidfs = self.transformer.fit_transform(newcounts, y)
         self.classifier.fit(tfidfs, y)
+        return tfidfs
+    
+    #----------------------------------------------------------------------
+    def fit(self, X, y):
+        """"""
+        self.fit_transform(X, y)
+        
+    #----------------------------------------------------------------------
+    def transform(self, X):
+        """"""
+        counts = self.vectorizer.transform(X)
+        newcounts = self.featureselect.transform(counts)
+        return self.transformer.transform(newcounts)
+    
+    #----------------------------------------------------------------------
+    def score(self, X, y):
+        """"""
+        tfidfs = self.transform(X)
+        return self.classifier.score(tfidfs, y)
 
 
 ########################################################################
@@ -226,6 +242,8 @@ class SvmClassifierTest(unittest.TestCase):
     def test_testClassifier(self):
         """"""
         testClassifier()
+        print 'test_testClassifier done'
+        print '-' * 70
         
     #----------------------------------------------------------------------
     def test_pipline_cross_val_score(self):
@@ -236,13 +254,9 @@ class SvmClassifierTest(unittest.TestCase):
         datasets = []
         for i in dataset.data:
             datasets.append(' '.join([j for j in jieba.cut(i)]))        #训练数据
-        classifier = bayesClassifier(MultinomialNB)
-        #预测数据
-        classify = classifier.classifier
-        vectorizer = classifier.vectorizer
-        transformer = classifier.transformer
+        classifier = bayesClassifier(MultinomialNB, k=1000)
         cv = ShuffleSplit(n_splits=3, test_size=0.3, random_state=0)
-        clf = make_pipeline(vectorizer, transformer, classify)
+        clf = make_pipeline(classifier)
         print cross_val_score(clf, datasets, dataset.target, cv=cv)
         print 'test_pipline_cross_val_score done!'
         print '-' * 70
