@@ -4,9 +4,10 @@
 class simhash:
     
     #构造函数
-    def __init__(self, tokens='', hashbits=128):        
+    def __init__(self, tokens='', hashbits=64):        
         self.hashbits = hashbits
-        self.hash = self.simhash(tokens);
+        self.hash = self.simhash(tokens)
+        self.tot = 0
     
     #toString函数    
     def __str__(self):
@@ -31,18 +32,18 @@ class simhash:
     #求海明距离
     def hamming_distance(self, other):
         x = (self.hash ^ other) & ((1 << self.hashbits) - 1)
-        tot = 0;
+        self.tot = 0;
         while x :
-            tot += 1
+            self.tot += 1
             x &= x - 1
-        return tot
+        return self.tot
     
     #求相似度
     def similarity (self, other):
-        a = float(self.hash)
-        b = float(other)
-        if a > b : return b / a
-        else: return a / b
+        if self.tot == 0:
+            return 1 - self.hamming_distance(other) / float(4 * len(str(other)))
+        else:
+            return 1 - self.tot / float(4 * len(str(other)))
     
     #针对source生成hash值   (一个可变长度版本的Python的内置散列)
     def _string_hash(self, source):        
